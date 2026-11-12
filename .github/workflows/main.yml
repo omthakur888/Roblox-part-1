@@ -29,9 +29,16 @@ jobs:
         run: |
           python generate_short.py
 
+      - name: Debug - Find all video files
+        run: |
+          echo "Listing all MP4 files in the repository workspace:"
+          find . -name "*.mp4"
+
       - name: Upload video artifact
         uses: actions/upload-artifact@v4
         with:
           name: roblox-short-video
-          path: output/
-          
+          path: |
+            *.mp4
+            **/*.mp4
+            
