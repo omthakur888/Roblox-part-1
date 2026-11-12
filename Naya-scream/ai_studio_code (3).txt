@@ -1,0 +1,2 @@
+PyYAML>=6.0
+edge-tts>=6.1.12
