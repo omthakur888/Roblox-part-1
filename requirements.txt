@@ -1,0 +1,5 @@
+edge-tts>=6.1.9
+numpy
+scipy
+pyyaml
+pillow
