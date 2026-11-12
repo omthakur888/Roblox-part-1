@@ -1,0 +1,76 @@
+name: Render Alex Countdown video
+
+on:
+  # Run it by hand: Actions tab -> "Render Alex Countdown video" -> Run workflow
+  workflow_dispatch:
+    inputs:
+      max_seconds:
+        description: "Seconds to render (60 = full video, 10 = quick test)"
+        required: false
+        default: "60"
+  # Also runs automatically whenever you commit changes to these files
+  push:
+    paths:
+      - "generate_video.py"
+      - "requirements.txt"
+      - ".github/workflows/render-video.yml"
+
+permissions:
+  contents: write   # needed so the finished MP4 can be attached to a Release
+
+concurrency:
+  group: render-video
+  cancel-in-progress: true
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      MAX_SECONDS: ${{ github.event.inputs.max_seconds || '60' }}
+      OUT: output/alex_countdown_part1.mp4
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install system packages (ffmpeg, free text-to-speech, fonts)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg espeak-ng fonts-dejavu-core
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Render the video
+        run: python generate_video.py
+
+      - name: Check the MP4
+        run: |
+          ls -lh output/
+          ffprobe -v error -show_entries stream=codec_name,width,height,r_frame_rate,duration \
+            -of default=nw=1 "$OUT"
+
+      - name: Upload MP4 as a workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: alex-countdown-video
+          path: output/alex_countdown_part1.mp4
+          retention-days: 30
+          if-no-files-found: error
+
+      # Easiest download on a phone: the MP4 appears under the repo's "Releases".
+      - name: Publish MP4 as a GitHub Release (full renders only)
+        if: ${{ env.MAX_SECONDS == '60' }}
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "video-${{ github.run_number }}" "$OUT" \
+            --title "Alex Countdown Part 1 (build #${{ github.run_number }})" \
+            --notes "1080x1920, 30 fps, MP4. Tap the .mp4 file below to download."
