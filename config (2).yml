@@ -1,0 +1,124 @@
+# ============================================================
+#  config.yml - every setting for "IN THIS TOWN, NOBODY IS ALLOWED TO SCREAM!"
+#  Times are in seconds.
+# ============================================================
+video:
+  title: "IN THIS TOWN, NOBODY IS ALLOWED TO SCREAM!"
+  width: 1080
+  height: 1920
+  fps: 30
+  duration: 57.0          # final video length (must stay under 60)
+  render_end: 55.0        # 3D footage ends here (cut to black), then the end card
+  preview_seconds: 10
+  title_card: {start: 0.3, end: 3.6}
+  final_text: "WOULD YOU SCREAM?"
+  final_card: {start: 55.3, end: 57.0}
+
+render:                   # Blender (Cycles, CPU) - works on a GitHub runner
+  samples: 4             # raise to 32-64 for cleaner frames (slower)
+  frame_step: 2           # render every 2nd frame (15 fps), ffmpeg restores 30 fps. 1 = all frames
+  percent: 25             # render at 50% (540x960) then upscale to 1080x1920. 100 = native, ~4x slower
+  denoise: true
+  motion_blur: false
+  motion_blur_shutter: 0.35
+  fog_density: 0      # 0 disables the volumetric fog
+  exposure: 0.8
+  moon_strength: 0.35
+  lamp_power: 1200
+  fstop: 0              # depth of field
+
+scenes:
+  - {id: 1, name: "The Rule",          start: 0,  end: 7}
+  - {id: 2, name: "Maya's Plan",       start: 7,  end: 15}
+  - {id: 3, name: "The Headphones",    start: 15, end: 25}
+  - {id: 4, name: "The Experiment",    start: 25, end: 40}
+  - {id: 5, name: "The Scream",        start: 40, end: 50}
+  - {id: 6, name: "Complete Ending",   start: 50, end: 57}
+
+characters:               # sRGB hex colours
+  maya:
+    skin: "#F2C79F"
+    hair: "#4A2A12"
+    hoodie: "#7B3FC4"
+    trousers: "#111114"
+  andy:
+    skin: "#E8B88F"
+    hair: "#1A1410"
+    shirt: "#2E78E6"
+    trousers: "#1B1D2A"
+    headphones_a: "#1A1A1D"
+    headphones_b: "#2A2C36"
+  monster:
+    body: "#050507"
+    eyes: "#FF3A12"
+
+narration:
+  voice: "en-US-AndrewNeural"       # warm, natural storyteller voice
+  fallback_voices: ["en-US-GuyNeural", "en-GB-RyanNeural", "en-US-ChristopherNeural"]
+  lines:                            # text comes from narration.txt
+    - {id: 1, start: 0.5,  rate: "-12%", pitch: "-4Hz"}
+    - {id: 2, start: 8.0,  rate: "-6%",  pitch: "-1Hz"}
+    - {id: 3, start: 15.3, rate: "-6%",  pitch: "-1Hz"}
+    - {id: 4, start: 25.4, rate: "-4%",  pitch: "+0Hz"}
+    - {id: 5, start: 34.0, rate: "-6%",  pitch: "-2Hz"}
+    - {id: 6, end_at: 43.6, rate: "+0%", pitch: "+2Hz"}   # ends exactly on the scream
+    - {id: 7, start: 50.4, rate: "-10%", pitch: "-4Hz"}
+  max_speedup: 1.2                  # a line longer than its slot is sped up at most this much
+
+captions:
+  enabled: true
+  font_size: 78
+  y_ratio: 0.70
+  words_per_chunk: 3
+
+audio:
+  music_volume: 0.55
+  ambience_volume: 0.35
+  sfx_volume: 0.9
+  vo_volume: 1.0
+  duck_amount: 0.55                 # music/ambience are lowered under narration
+  muffled_until: 39.0               # ambience is muffled while Andy wears noise cancelling
+
+footsteps:                          # {who, t0, t1, every}
+  - {who: andy,    t0: 7.0,  t1: 23.0, every: 0.5,  gain: 0.30}
+  - {who: maya,    t0: 16.0, t1: 22.9, every: 0.45, gain: 0.20}
+  - {who: maya,    t0: 22.9, t1: 24.2, every: 0.28, gain: 0.30}
+  - {who: maya,    t0: 30.8, t1: 31.6, every: 0.30, gain: 0.30}
+  - {who: maya,    t0: 33.1, t1: 34.3, every: 0.26, gain: 0.35}
+  - {who: maya,    t0: 35.0, t1: 36.0, every: 0.26, gain: 0.35}
+  - {who: maya,    t0: 37.4, t1: 38.2, every: 0.40, gain: 0.25}
+  - {who: maya,    t0: 47.0, t1: 53.0, every: 0.25, gain: 0.40}
+  - {who: monster, t0: 40.6, t1: 45.5, every: 0.60, gain: 0.60}
+  - {who: monster, t0: 45.5, t1: 53.0, every: 0.85, gain: 0.55}
+
+sfx:                                # {t, type, gain}
+  - {t: 3.4,  type: boom,       gain: 0.7}   # monster silhouette appears
+  - {t: 3.4,  type: growl,      gain: 0.35, dur: 2.0}
+  - {t: 5.0,  type: riser,      gain: 0.35, dur: 1.9}
+  - {t: 6.6,  type: whoosh,     gain: 0.5}
+  - {t: 7.0,  type: whoosh,     gain: 0.3}
+  - {t: 12.4, type: whoosh,     gain: 0.25}
+  - {t: 21.6, type: click,      gain: 0.9}   # headphone swap
+  - {t: 21.65,type: click,      gain: 0.7}
+  - {t: 28.3, type: whoosh,     gain: 0.7}   # Maya pops up from behind the wall
+  - {t: 28.4, type: sting,      gain: 0.6}
+  - {t: 31.9, type: squeak,     gain: 0.9}   # funny object: rubber duck
+  - {t: 32.3, type: squeak,     gain: 0.9}
+  - {t: 34.5, type: crash,      gain: 1.0}   # loud sound nearby: trash can
+  - {t: 36.0, type: whoosh,     gain: 0.7}
+  - {t: 36.2, type: sting,      gain: 0.9}   # final trick
+  - {t: 38.8, type: click,      gain: 1.0}   # noise cancellation switched off
+  - {t: 38.85,type: power_down, gain: 0.8}
+  - {t: 38.5, type: riser,      gain: 0.5, dur: 4.5}
+  - {t: 40.0, type: heartbeat,  gain: 0.8, dur: 3.5}
+  - {t: 40.5, type: rattle,     gain: 0.5, dur: 9.5}   # windows shaking
+  - {t: 40.0, type: buzz,       gain: 0.4, dur: 10.0}  # lights flickering
+  - {t: 41.8, type: growl,      gain: 0.9, dur: 2.2}   # the noise behind Andy
+  - {t: 43.0, type: boom,       gain: 0.8}
+  - {t: 43.6, type: scream,     gain: 1.0}
+  - {t: 43.6, type: sting,      gain: 0.9}
+  - {t: 44.5, type: growl,      gain: 0.9, dur: 3.0}
+  - {t: 47.0, type: whoosh,     gain: 0.5}
+  - {t: 52.6, type: growl,      gain: 1.0, dur: 2.3}
+  - {t: 53.2, type: riser,      gain: 0.7, dur: 1.8}
+  - {t: 55.0, type: boom,       gain: 1.0}   # cut to black
