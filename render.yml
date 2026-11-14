@@ -1,0 +1,53 @@
+name: Render Odyson Lava Story
+
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: "Render only a 5-second test"
+        required: true
+        type: choice
+        options:
+          - "true"
+          - "false"
+        default: "true"
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Render video
+        env:
+          SAMPLE: ${{ github.event.inputs.sample == 'true' && '1' || '0' }}
+        run: python main.py
+
+      - name: Upload rendered video
+        uses: actions/upload-artifact@v4
+        with:
+          name: odyson-lava-video
+          path: output/*.mp4
+          if-no-files-found: error
+          retention-days: 7
