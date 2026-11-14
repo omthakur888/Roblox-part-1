@@ -1,0 +1,37 @@
+name: Render Roblox-style story
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out project
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Pillow and FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          python -m pip install --upgrade pip
+          pip install Pillow
+
+      - name: Render MP4
+        run: python main.py
+
+      - name: Upload video
+        uses: actions/upload-artifact@v4
+        with:
+          name: roblox-story-mp4
+          path: roblox_story.mp4
+          if-no-files-found: error
