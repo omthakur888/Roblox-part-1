@@ -1,0 +1,28 @@
+name: Render Roblox 3AM video
+
+on:
+  workflow_dispatch:
+
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Blender and virtual display
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri libglx-mesa0
+          sudo snap install blender --channel=4.2lts/stable --classic
+
+      - name: Render
+        run: |
+          mkdir -p out
+          xvfb-run -a blender -b -P roblox_3am.py -- out/roblox_3am_
+
+      - name: Upload video
+        uses: actions/upload-artifact@v4
+        with:
+          name: roblox-3am-video
+          path: out/*.mp4
